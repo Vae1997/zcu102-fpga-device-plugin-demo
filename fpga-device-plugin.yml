@@ -1,0 +1,40 @@
+# this yml file is used to start the fpga-device-plugin
+apiVersion: extensions/v1beta1
+#if run with k8s v1.16+, replace the above line with
+#apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fpga-device-plugin-daemonset
+  namespace: kube-system
+spec:
+#if run with k8s v1.16+, these 3 lines are also required
+#selector:
+#    matchLabels:
+#      name: xilinx-fpga-device-plugin
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+      labels:
+        name: xilinx-fpga-device-plugin
+    spec:
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      containers:
+      # change image with built from Dockerfile
+      - image: vae2019/k8s_zcu102_fpga_plugin_test:latest #xilinxatg/xilinx_k8s_fpga_plugin:latest
+        name: xilinx-fpga-device-plugin
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+        volumeMounts:
+          - name: device-plugin
+            mountPath: /var/lib/kubelet/device-plugins
+      nodeSelector:
+        aarch: arm64
+      volumes:
+        - name: device-plugin
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
