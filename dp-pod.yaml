@@ -1,0 +1,17 @@
+# this yml file just verify the device-plugin is working
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+  - name: mypod
+  # this image base ubuntu and just apply fpga
+  # renderD128 device driver locate in /dev/dri after plugin started
+    image: vae2019/zcu102-fpga-verify:latest
+    resources:
+      limits:
+      # note the 20191217 just is a string from fpga.go
+        xilinx.com/fpga-drm_minor-20191217: 1
+    command: ["/bin/sh"]
+    args: ["-c", "while true; do echo hello; sleep 10;done"]	
